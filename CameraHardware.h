@@ -20,61 +20,67 @@
 #define ANDROID_HARDWARE_CAMERA_HARDWARE_H
 
 #include <utils/threads.h>
-#include <ui/CameraHardwareInterface.h>
+#include <device1/CameraHardwareInterface.h>
 #include <utils/MemoryBase.h>
 #include <utils/MemoryHeapBase.h>
 #include <utils/threads.h>
 
 #include "v4l2/V4L2Camera.h"
 
-namespace android {
+namespace android
+{
 
-class CameraHardware : public CameraHardwareInterface {
-public:
+class CameraHardware : public CameraHardwareInterface
+{
+  public:
     virtual sp<IMemoryHeap> getPreviewHeap() const;
     virtual sp<IMemoryHeap> getRawHeap() const;
 
-    virtual status_t    startPreview(preview_callback cb, void* user);
-    virtual void        stopPreview();
-    virtual bool        previewEnabled();
+    virtual status_t startPreview(preview_callback cb, void *user);
+    virtual void stopPreview();
+    virtual bool previewEnabled();
 
-    virtual status_t    startRecording(recording_callback cb, void* user);
-    virtual void        stopRecording();
-    virtual bool        recordingEnabled();
-    virtual void        releaseRecordingFrame(const sp<IMemory>& mem);
+    virtual status_t startRecording(recording_callback cb, void *user);
+    virtual void stopRecording();
+    virtual bool recordingEnabled();
+    virtual void releaseRecordingFrame(const sp<IMemory> &mem);
 
-    virtual status_t    autoFocus(autofocus_callback, void *user);
-    virtual status_t    takePicture(shutter_callback,
-                                    raw_callback,
-                                    jpeg_callback,
-                                    void* user);
-    virtual status_t    cancelPicture(bool cancel_shutter,
-                                      bool cancel_raw,
-                                      bool cancel_jpeg);
-    virtual status_t    dump(int fd, const Vector<String16>& args) const;
-    virtual status_t    setParameters(const CameraParameters& params);
-    virtual CameraParameters  getParameters() const;
+    virtual status_t autoFocus(autofocus_callback, void *user);
+    virtual status_t takePicture(shutter_callback,
+                                 raw_callback,
+                                 jpeg_callback,
+                                 void *user);
+    virtual status_t cancelPicture(bool cancel_shutter,
+                                   bool cancel_raw,
+                                   bool cancel_jpeg);
+    virtual status_t dump(int fd, const Vector<String16> &args) const;
+    virtual status_t setParameters(const CameraParameters &params);
+    virtual CameraParameters getParameters() const;
     virtual void release();
 
     static sp<CameraHardwareInterface> createInstance();
 
-private:
-                        CameraHardware();
-    virtual             ~CameraHardware();
+  private:
+    CameraHardware();
+    virtual ~CameraHardware();
 
     static wp<CameraHardwareInterface> singleton;
 
     static const int kBufferCount = 4;
 
-    class PreviewThread : public Thread {
-        CameraHardware* mHardware;
-    public:
-        PreviewThread(CameraHardware* hw)
-            : Thread(false), mHardware(hw) { }
-        virtual void onFirstRef() {
+    class PreviewThread : public Thread
+    {
+        CameraHardware *mHardware;
+
+      public:
+        PreviewThread(CameraHardware *hw)
+            : Thread(false), mHardware(hw) {}
+        virtual void onFirstRef()
+        {
             run("CameraPreviewThread", PRIORITY_URGENT_DISPLAY);
         }
-        virtual bool threadLoop() {
+        virtual bool threadLoop()
+        {
             mHardware->previewThread();
             // loop until we need to quit
             return true;
@@ -92,35 +98,35 @@ private:
     static int beginPictureThread(void *cookie);
     int pictureThread();
 
-    mutable Mutex       mLock;
+    mutable Mutex mLock;
 
-    CameraParameters    mParameters;
+    CameraParameters mParameters;
 
-    sp<MemoryHeapBase>  mPreviewHeap;
-    sp<MemoryHeapBase>  mRawHeap;
-    sp<MemoryBase>      mBuffers[kBufferCount];
+    sp<MemoryHeapBase> mPreviewHeap;
+    sp<MemoryHeapBase> mRawHeap;
+    sp<MemoryBase> mBuffers[kBufferCount];
 
-    bool                mPreviewRunning;
-    int                 mPreviewFrameSize;
+    bool mPreviewRunning;
+    int mPreviewFrameSize;
 
-    shutter_callback    mShutterCallback;
-    raw_callback        mRawPictureCallback;
-    jpeg_callback       mJpegPictureCallback;
-    void                *mPictureCallbackCookie;
+    shutter_callback mShutterCallback;
+    raw_callback mRawPictureCallback;
+    jpeg_callback mJpegPictureCallback;
+    void *mPictureCallbackCookie;
 
     // protected by mLock
-    sp<PreviewThread>   mPreviewThread;
-    preview_callback    mPreviewCallback;
-    void                *mPreviewCallbackCookie;
+    sp<PreviewThread> mPreviewThread;
+    preview_callback mPreviewCallback;
+    void *mPreviewCallbackCookie;
 
-    autofocus_callback  mAutoFocusCallback;
-    void                *mAutoFocusCallbackCookie;
+    autofocus_callback mAutoFocusCallback;
+    void *mAutoFocusCallbackCookie;
 
     // only used from PreviewThread
-    int                 mCurrentPreviewFrame;
+    int mCurrentPreviewFrame;
 
     // use V4L2
-    V4L2Camera		*mCamera;
+    V4L2Camera *mCamera;
 };
 
 }; // namespace android

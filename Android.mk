@@ -10,6 +10,7 @@ LOCAL_MODULE:= libcamera
 
 LOCAL_SHARED_LIBRARIES:= \
     libui \
+    libcameraservice \
     libutils \
     libcutils \
     libmedia
